@@ -1,0 +1,14 @@
+﻿bin/
+obj/
+.vs/
+.vscode/
+*.user
+.idea/
+*.suo
+.DS_Store
+appsettings.Development.json
+appsettings.*.local.json
+.env
+*.nupkg
+**/packages/
+*.log
