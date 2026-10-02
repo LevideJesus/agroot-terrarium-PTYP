@@ -1,6 +1,9 @@
 using AgrootTerrarium.Api.Data;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using AgrootTerrarium.Api.Models;
+using AgrootTerrarium.Api.Enums;
 
 namespace AgrootTerrarium.Api.Service
 {
@@ -16,7 +19,7 @@ namespace AgrootTerrarium.Api.Service
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
 
-            TimeZoneInfo saoPauloZone = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
+            var saoPauloZone = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -34,8 +37,56 @@ namespace AgrootTerrarium.Api.Service
 
                 var dbContext = scope.ServiceProvider.GetRequiredService<AgrootDbContext>();
 
-                Console.WriteLine(dbContext.Zones.Count());
+                var dueEntries = await dbContext.ScheduleEntries.Include(s => s.ParentZone)
+                    .Where(s => s.IsEnabled &&
+                    s.ParentZone != null && s.ParentZone.IsActive
+                    && s.TimeOfDay.Hour == currentlyTimeOnly.Hour
+                    && s.TimeOfDay.Minute == currentlyTimeOnly.Minute)
+                    .ToListAsync();
 
+
+                foreach(var entry in dueEntries)
+                {
+                    
+                    var oneHourAgo = DateTime.UtcNow.AddHours(-1);
+
+                    var recentEvents = await dbContext.MistEvents
+                    .Where(e => e.ZoneId == entry.ZoneId && 
+                        e.TriggerType == TriggerType.Scheduled && 
+                        e.TriggeredAtUtc > oneHourAgo)
+                    .ToListAsync();
+
+                    bool alreadyExists = recentEvents.Any(e => 
+                    {
+                        var localEventTime = TimeZoneInfo.ConvertTimeFromUtc(e.TriggeredAtUtc, saoPauloZone);
+                        
+                        return localEventTime.Date == localNow.Date &&
+                            localEventTime.Hour == entry.TimeOfDay.Hour &&
+                            localEventTime.Minute == entry.TimeOfDay.Minute;
+                    });
+
+                    if (alreadyExists)
+                    {
+                        continue;
+                    }
+
+                    var newMistEvent = new MistEvent
+                    {
+                        ZoneId = entry.ZoneId,
+                        TriggeredAtUtc = DateTime.UtcNow,
+                        TriggerType = TriggerType.Scheduled,
+                        DurationSeconds = entry.ParentZone!.MistDurationSeconds
+                    };
+
+                    dbContext.MistEvents.Add(newMistEvent);
+
+                    Console.WriteLine($"Zone {entry.ParentZone.Name} misted (scheduled)");
+                }
+
+                await dbContext.SaveChangesAsync();
+
+
+                Console.WriteLine($"[Tick {currentlyTimeOnly:HH:mm:ss}] Checked {dueEntries.Count} due entries");
                 try
                 {
                     await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
