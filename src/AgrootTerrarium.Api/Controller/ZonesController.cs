@@ -1,5 +1,6 @@
 using AgrootTerrarium.Api.Data;
 using AgrootTerrarium.Api.Dtos;
+using AgrootTerrarium.Api.Enums;
 using AgrootTerrarium.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -117,6 +118,48 @@ namespace AgrootTerrarium.Api.Controllers
             };
 
             return CreatedAtAction(nameof(GetScheduleEntries), new { zoneId }, responseDto);
+        }
+
+        [HttpPost("{zoneId}/mist")]
+
+        public async Task<ActionResult<MistEventResponseDto>> CreateMistEvent (int zoneId)
+        {
+            var zone = await _context.Zones.FindAsync(zoneId);
+
+            if(zone == null)
+            {
+                return NotFound();
+            }
+
+            if(!zone.IsActive)
+            {
+                return BadRequest(new {message = "Zone is inactive."});
+            }
+
+            var mistEvent = new MistEvent
+            {
+                ZoneId = zone.Id,
+                TriggeredAtUtc = DateTime.UtcNow,
+                TriggerType = TriggerType.Manual,
+                DurationSeconds = zone.MistDurationSeconds
+            };
+
+            _context.MistEvents.Add(mistEvent);
+
+            await _context.SaveChangesAsync();
+
+            Console.WriteLine($"Zone {zone.Name} misted (manual)");
+
+            var dto = new MistEventResponseDto
+            {
+                Id = mistEvent.Id,
+                ZoneId = mistEvent.ZoneId,
+                TriggeredAtUtc = mistEvent.TriggeredAtUtc,
+                TriggerType = mistEvent.TriggerType,
+                DurationSeconds = mistEvent.DurationSeconds
+            };
+
+            return Ok(dto);
         }
     }
 }
