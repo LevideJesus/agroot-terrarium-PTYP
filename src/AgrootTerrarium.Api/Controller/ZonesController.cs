@@ -66,6 +66,35 @@ namespace AgrootTerrarium.Api.Controllers
             return Ok(entries);
         }
 
+        [HttpGet("{zoneId}/events")]
+
+        public async Task <ActionResult<IEnumerable<MistEventResponseDto>>> GetMistEvents(int zoneId)
+        {
+            var zone = await _context.Zones.FindAsync(zoneId);
+
+            if(zone == null)
+            {
+                return NotFound();
+            }
+
+            var events = await _context.MistEvents
+                .Where(e => e.ZoneId == zoneId)
+                .OrderByDescending(e => e.TriggeredAtUtc)
+                .Select(e => new MistEventResponseDto
+                {
+                    Id = e.Id,
+                    ZoneId = e.ZoneId,
+                    TriggeredAtUtc = e.TriggeredAtUtc,
+                    TriggerType = e.TriggerType,
+                    DurationSeconds = e.DurationSeconds
+                })
+                .ToListAsync();
+
+                return Ok(events);
+
+            
+        }
+
         [HttpPost]
 
         public async Task<ActionResult<Zone>> CreateZone([FromBody] CreateZoneDto dto)
