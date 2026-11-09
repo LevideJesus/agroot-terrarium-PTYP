@@ -20,9 +20,19 @@ namespace AgrootTerrarium.Api.Controllers
 
         [HttpGet]
 
-        public async Task<ActionResult<List<Zone>>> GetZones()
+        public async Task<ActionResult<List<ZoneResponseDto>>> GetZones()
         {
-            var zones = await _context.Zones.ToListAsync();
+            var zones = await _context.Zones.Select(z => new ZoneResponseDto
+            {
+                Id = z.Id,
+                Name = z.Name,
+                MoistureThreshold = z.MoistureThreshold,
+                MistDurationSeconds = z.MistDurationSeconds,
+                IsActive = z.IsActive
+                
+                
+            })
+            .ToListAsync();
 
             return Ok(zones);
 
@@ -30,7 +40,7 @@ namespace AgrootTerrarium.Api.Controllers
 
         [HttpGet("{id}")]
 
-        public async Task<ActionResult> GetZonesById(int id)
+        public async Task<ActionResult<ZoneResponseDto>> GetZonesById(int id)
         {
             var zones = await _context.Zones.FindAsync(id);
 
@@ -39,7 +49,16 @@ namespace AgrootTerrarium.Api.Controllers
                 return NotFound();
             }
 
-            return NoContent();
+            var dto = new ZoneResponseDto
+            {
+                Id = zones.Id,
+                Name = zones.Name,
+                MoistureThreshold = zones.MoistureThreshold,
+                MistDurationSeconds = zones.MistDurationSeconds,
+                IsActive = zones.IsActive
+            };
+
+            return Ok(dto);
         }
 
         [HttpGet("{zoneId}/schedule")]
@@ -59,7 +78,8 @@ namespace AgrootTerrarium.Api.Controllers
             {
                 Id = e.Id,
                 ZoneId = e.ZoneId,
-                TimeOfDay = e.TimeOfDay
+                TimeOfDay = e.TimeOfDay,
+                IsEnabled = e.IsEnabled
             })
             .ToListAsync();
 
@@ -97,7 +117,7 @@ namespace AgrootTerrarium.Api.Controllers
 
         [HttpPost]
 
-        public async Task<ActionResult<Zone>> CreateZone([FromBody] CreateZoneDto dto)
+        public async Task<ActionResult<ZoneResponseDto>> CreateZone([FromBody] CreateZoneDto dto)
         {
               
             var novaZona = new Zone
@@ -107,11 +127,20 @@ namespace AgrootTerrarium.Api.Controllers
                 MistDurationSeconds = dto.MistDurationSeconds
             };
 
-             _context.Zones.Add(novaZona);
+            _context.Zones.Add(novaZona);
 
-             await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-             return CreatedAtAction(nameof(GetZonesById), new {id = novaZona.Id}, novaZona);
+              var newDto = new ZoneResponseDto
+            {
+                Id = novaZona.Id,
+                Name = novaZona.Name,
+                MoistureThreshold = novaZona.MoistureThreshold,
+                MistDurationSeconds = novaZona.MistDurationSeconds,
+                IsActive = novaZona.IsActive
+            };
+
+            return CreatedAtAction(nameof(GetZonesById), new {id = novaZona.Id}, newDto);
         }
 
        
