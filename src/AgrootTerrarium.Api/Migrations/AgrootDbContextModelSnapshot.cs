@@ -46,7 +46,7 @@ namespace AgrootTerrarium.Api.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("MistEvents");
+                    b.ToTable("MistEvents", (string)null);
                 });
 
             modelBuilder.Entity("AgrootTerrarium.Api.Models.ScheduleEntry", b =>
@@ -70,7 +70,7 @@ namespace AgrootTerrarium.Api.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("ScheduleEntries");
+                    b.ToTable("ScheduleEntries", (string)null);
                 });
 
             modelBuilder.Entity("AgrootTerrarium.Api.Models.Zone", b =>
@@ -93,9 +93,12 @@ namespace AgrootTerrarium.Api.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
+                    b.Property<int>("ZoneType")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Zones");
+                    b.ToTable("Zones", (string)null);
                 });
 
             modelBuilder.Entity("AgrootTerrarium.Api.Models.MistEvent", b =>

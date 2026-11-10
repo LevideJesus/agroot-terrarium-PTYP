@@ -28,7 +28,8 @@ namespace AgrootTerrarium.Api.Controllers
                 Name = z.Name,
                 MoistureThreshold = z.MoistureThreshold,
                 MistDurationSeconds = z.MistDurationSeconds,
-                IsActive = z.IsActive
+                IsActive = z.IsActive,
+                ZoneType = z.ZoneType
                 
                 
             })
@@ -55,7 +56,8 @@ namespace AgrootTerrarium.Api.Controllers
                 Name = zones.Name,
                 MoistureThreshold = zones.MoistureThreshold,
                 MistDurationSeconds = zones.MistDurationSeconds,
-                IsActive = zones.IsActive
+                IsActive = zones.IsActive,
+                ZoneType = zones.ZoneType
             };
 
             return Ok(dto);
@@ -124,7 +126,8 @@ namespace AgrootTerrarium.Api.Controllers
             {
                 Name = dto.Name,
                 MoistureThreshold = dto.MoistureThreshold,
-                MistDurationSeconds = dto.MistDurationSeconds
+                MistDurationSeconds = dto.MistDurationSeconds,
+                ZoneType = dto.ZoneType
             };
 
             _context.Zones.Add(novaZona);
@@ -137,7 +140,8 @@ namespace AgrootTerrarium.Api.Controllers
                 Name = novaZona.Name,
                 MoistureThreshold = novaZona.MoistureThreshold,
                 MistDurationSeconds = novaZona.MistDurationSeconds,
-                IsActive = novaZona.IsActive
+                IsActive = novaZona.IsActive,
+                ZoneType = novaZona.ZoneType
             };
 
             return CreatedAtAction(nameof(GetZonesById), new {id = novaZona.Id}, newDto);

@@ -1,3 +1,5 @@
+using AgrootTerrarium.Api.Enums;
+
 namespace AgrootTerrarium.Api.Models
 {
     public class Zone
@@ -15,5 +17,7 @@ namespace AgrootTerrarium.Api.Models
         public List<ScheduleEntry> DailyTime {get; set;} = new();
 
         public List<MistEvent> HistoryLog {get; set;} = new();
+
+        public ZoneType ZoneType {get; set;} = ZoneType.Soil;
     }
 }

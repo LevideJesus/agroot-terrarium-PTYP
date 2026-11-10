@@ -12,6 +12,7 @@ namespace AgrootTerrarium.Api.Data
        public DbSet<ScheduleEntry> ScheduleEntries {get; set;}
 
        public DbSet<MistEvent> MistEvents {get; set;}
+       
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

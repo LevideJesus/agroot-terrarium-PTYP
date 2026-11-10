@@ -1,3 +1,5 @@
+using AgrootTerrarium.Api.Enums;
+
 namespace AgrootTerrarium.Api.Dtos
 {
     public class ZoneResponseDto
@@ -11,5 +13,7 @@ namespace AgrootTerrarium.Api.Dtos
         public int MistDurationSeconds {get; set;}
 
         public bool IsActive {get; set;} 
+
+        public ZoneType ZoneType {get; set;}
     }
 }
