@@ -223,5 +223,59 @@ namespace AgrootTerrarium.Api.Controllers
 
             return Ok(dto);
         }
+
+        [HttpPatch("{id}")]
+
+        public async Task<ActionResult<ZoneResponseDto>> PatchZone (int id, [FromBody] PatchZoneDto dto)
+        {
+            var zone = await _context.Zones.FindAsync(id);
+
+            if(zone == null)
+            {
+                return NotFound();
+            }
+
+            if (!string.IsNullOrEmpty(dto.Name))
+            {
+                zone.Name = dto.Name;
+            }
+
+            if (dto.MoistureThreshold.HasValue)
+            {
+               zone.MoistureThreshold = dto.MoistureThreshold.Value;
+            }
+
+            if (dto.MistDurationSeconds.HasValue)
+            {
+                zone.MistDurationSeconds = dto.MistDurationSeconds.Value;
+            }
+
+            if (dto.IsActive.HasValue)
+            {
+                zone.IsActive = dto.IsActive.Value;
+
+            }
+
+            if (dto.ZoneType.HasValue)
+            {
+               zone.ZoneType = dto.ZoneType.Value;
+            }
+
+            await _context.SaveChangesAsync();
+
+            var responseDto = new ZoneResponseDto
+            {
+                Id = zone.Id,
+                Name = zone.Name,
+                MoistureThreshold = zone.MoistureThreshold,
+                IsActive = zone.IsActive,
+                ZoneType = zone.ZoneType,
+                MistDurationSeconds = zone.MistDurationSeconds
+
+
+            };
+
+            return Ok(responseDto);
+        }
     }
 }
